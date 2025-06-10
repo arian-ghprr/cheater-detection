@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مقایسه پاسخ و زمان کاربران</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; background: #f0f2f5; }
+        .panel { background: #fff; margin: 2rem auto; padding: 2rem; border-radius: 10px; max-width: 1200px; box-shadow: 0 2px 10px #0002; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #1a73e8; color: #fff; }
+        tr:nth-child(even) { background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h1>مقایسه پاسخ و زمان کاربران</h1>
+        <div id="compare-result"></div>
+        <button onclick="window.location.href='/'" style="margin-top:2rem;">بازگشت به صفحه اصلی</button>
+    </div>
+    <script>
+        fetch('/api/test_compare')
+            .then(res => res.json())
+            .then(data => {
+                let html = '<table><thead><tr><th>کاربر ۱</th><th>کاربر ۲</th><th>شماره سوال</th><th>پاسخ ۱</th><th>پاسخ ۲</th><th>شباهت متنی</th><th>ریز دنباله مشترک</th><th>زمان ۱</th><th>زمان ۲</th><th>اختلاف زمان</th></tr></thead><tbody>';
+                data.filter(row => (row.similarity !== '' && row.similarity > 0.5 && row.time_diff !== null && row.time_diff < 5))
+                    .forEach(row => {
+                        html += `<tr>
+                            <td>${row.user1}</td>
+                            <td>${row.user2}</td>
+                            <td>${row.qnumber}</td>
+                            <td>${row.desc1}</td>
+                            <td>${row.desc2}</td>
+                            <td>${(row.similarity * 100).toFixed(1)}%</td>
+                            <td>${row.lcs || ''}</td>
+                            <td>${row.time1 !== null ? row.time1 : ''}</td>
+                            <td>${row.time2 !== null ? row.time2 : ''}</td>
+                            <td>${row.time_diff !== null ? row.time_diff : ''}</td>
+                        </tr>`;
+                    });
+                html += '</tbody></table>';
+                document.getElementById('compare-result').innerHTML = html;
+            });
+    </script>
+</body>
+</html> 

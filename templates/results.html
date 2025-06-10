@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نتایج تحلیل پاسخ‌ها</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --panel-bg: white;
+            --text-color: #333;
+            --primary-color: #1a73e8;
+            --primary-hover: #1557b0;
+            --input-border: #ddd;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --danger-color: #f44336;
+            --info-color: #2196f3;
+            --answer-bg: #f8f9fa;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --panel-bg: #2d2d2d;
+            --text-color: #ffffff;
+            --primary-color: #4a9eff;
+            --primary-hover: #77b7ff;
+            --input-border: #444;
+            --answer-bg: #3d3d3d;
+        }
+
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s;
+            padding: 2rem 0;
+        }
+
+        .results-panel {
+            background-color: var(--panel-bg);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            text-align: right;
+            max-width: 800px;
+            width: 90%;
+            transition: background-color 0.3s;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .analysis-container {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+        }
+
+        .analysis-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.1em;
+        }
+
+        .comparison-item {
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: rgba(var(--primary-color), 0.05);
+            border-radius: 8px;
+        }
+
+        .similarity-score {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .score-bar {
+            flex-grow: 1;
+            height: 20px;
+            background-color: var(--input-border);
+            border-radius: 10px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background-color: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        .score-value {
+            min-width: 60px;
+            text-align: left;
+        }
+
+        .lcs-result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(var(--primary-color), 0.1);
+            border-radius: 5px;
+        }
+
+        .user-info {
+            margin-bottom: 1rem;
+            color: var(--text-color);
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .average-scores {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: rgba(var(--info-color), 0.1);
+            border-radius: 8px;
+        }
+
+        .no-comparison {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-color);
+            font-size: 1.1em;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .user-name {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .answers-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .answer-box {
+            background-color: var(--answer-bg);
+            padding: 1rem;
+            border-radius: 5px;
+            border: 1px solid var(--input-border);
+        }
+
+        .answer-label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .answer-text {
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="results-panel">
+        <div style="text-align:center; margin-bottom:1.5em;">
+            <button onclick="window.location.href='/test-panel'" style="background-color:#1a73e8; color:white; font-size:1.1em; padding:10px 24px; border:none; border-radius:6px; cursor:pointer;">مشاهده تست داده جیسون</button>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" title="تغییر حالت روشن/تاریک">🌓</button>
+        <div id="user-time-comparison" style="text-align:center; font-size:1.1em; color:var(--primary-color); margin-bottom:1em;"></div>
+        <div id="user-info" class="user-info"></div>
+        <h1>نتایج تحلیل پاسخ‌ها</h1>
+        <div id="analysis-results"></div>
+        <button onclick="window.location.href='/'">بازگشت به صفحه اصلی</button>
+        <button onclick="clearAllUsers()" style="background-color: var(--danger-color); margin-top: 10px;">پاک کردن اطلاعات همه کاربران</button>
+    </div>
+
+    <script>
+        // تنظیم حالت اولیه تم
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function getScoreColor(score) {
+            if (score >= 80) return 'var(--success-color)';
+            if (score >= 50) return 'var(--warning-color)';
+            return 'var(--danger-color)';
+        }
+
+        function displayResults(results) {
+            // نمایش مقایسه زمان کاربر با سایر کاربران
+            let comparisonHTML = '';
+            if (results.other_users_times && results.other_users_times.length > 0) {
+                comparisonHTML = '<strong>مقایسه زمان صرف‌شده شما با سایر کاربران:</strong><br>';
+                comparisonHTML += '<ul style="list-style:none; padding:0;">';
+                comparisonHTML += '<li style="color:var(--primary-color);">شما: ' + (results.current_total_time || 0) + ' ثانیه</li>';
+                results.other_users_times.forEach(user => {
+                    comparisonHTML += '<li>' + user.name + ': ' + user.total_time + ' ثانیه</li>';
+                });
+                comparisonHTML += '</ul>';
+            }
+            // نمایش مدت زمان بین ورود و ثبت پاسخ
+            let durationHTML = '';
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const currentUser = users[users.length - 1];
+            if (currentUser && currentUser.duration) {
+                durationHTML = `<div style="text-align:center; color:var(--primary-color); font-size:1.1em; margin-bottom:1em;">مدت زمان پاسخگویی شما: <strong>${currentUser.duration}</strong></div>`;
+            }
+            // نمایش ضریب همبستگی پیرسون اگر وجود دارد
+            let pearsonHTML = '';
+            if (results.suspicious_time_patterns && results.suspicious_time_patterns.length > 0) {
+                pearsonHTML = '<div style="text-align:center; color:var(--danger-color); font-size:1.1em; margin-bottom:1em;">';
+                pearsonHTML += '<strong>ضریب همبستگی زمانی (پیرسون) با کاربران مشکوک:</strong><br>';
+                results.suspicious_time_patterns.forEach(item => {
+                    pearsonHTML += `${item.user_name}: <strong>${item.correlation}</strong> (سوالات مشترک: ${item.questions.join(', ')})<br>`;
+                });
+                pearsonHTML += '</div>';
+            }
+            document.getElementById('user-time-comparison').innerHTML = durationHTML + comparisonHTML + pearsonHTML;
+            const userInfo = document.getElementById('user-info');
+            const analysisResults = document.getElementById('analysis-results');
+            
+            if (!results.has_comparison) {
+                userInfo.textContent = `${results.name} عزیز`;
+                analysisResults.innerHTML = `
+                    <div class="no-comparison">
+                        ${results.message}
+                        <br>
+                        لطفاً بعداً مراجعه کنید.
+                    </div>
+                `;
+                return;
+            }
+
+            userInfo.textContent = `${results.name} عزیز، مقایسه پاسخ‌های شما با ${results.total_users - 1} کاربر دیگر:`;
+
+            for (const [qId, analysis] of Object.entries(results.analysis)) {
+                const container = document.createElement('div');
+                container.className = 'analysis-container';
+                
+                let comparisonsHTML = '';
+                analysis.comparisons.forEach(comp => {
+                    comparisonsHTML += `
+                        <div class="comparison-item">
+                            <div class="user-name">مقایسه با ${comp.user_name}:</div>
+                            ${comp.duration ? `<div style='color:var(--primary-color); font-size:0.95em; margin-bottom:0.5em;'>مدت زمان پاسخگویی: <strong>${comp.duration}</strong></div>` : ''}
+                            <div class="answers-comparison">
+                                <div class="answer-box">
+                                    <div class="answer-label">پاسخ شما:</div>
+                                    <div class="answer-text">${comp.current_answer}</div>
+                                </div>
+                                <div class="answer-box">
+                                    <div class="answer-label">پاسخ ${comp.user_name}:</div>
+                                    <div class="answer-text">${comp.user_answer}</div>
+                                </div>
+                            </div>
+                            <div class="similarity-score">
+                                <span>شباهت کلی:</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${comp.cosine_similarity * 100}%; background-color: ${getScoreColor(comp.cosine_similarity * 100)}"></div>
+                                </div>
+                                <span class="score-value">${(comp.cosine_similarity * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="similarity-score">
+                                <span>شباهت LCS:</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${comp.lcs_percentage}%; background-color: ${getScoreColor(comp.lcs_percentage)}"></div>
+                                </div>
+                                <span class="score-value">${comp.lcs_percentage.toFixed(1)}%</span>
+                            </div>
+                            <div class="lcs-result">
+                                <strong>زیردنباله مشترک:</strong> ${comp.lcs}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = `
+                    <div class="analysis-title">${analysis.question_title}</div>
+                    ${comparisonsHTML}
+                    <div class="average-scores">
+                        <div><strong>میانگین شباهت LCS:</strong> ${analysis.average_lcs.toFixed(1)}%</div>
+                        <div><strong>میانگین نهایی شباهت (cosine و LCS):</strong> ${analysis.average_similarity.toFixed(1)}%</div>
+                    </div>
+                `;
+                
+                analysisResults.appendChild(container);
+            }
+        }
+
+        // دریافت و نمایش نتایج
+        window.onload = function() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.length === 0) {
+                window.location.href = '/';
+                return;
+            }
+
+            fetch('/api/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ users: users })
+            })
+            .then(response => response.json())
+            .then(data => displayResults(data))
+            .catch(error => {
+                console.error('Error:', error);
+                alert('خطا در دریافت نتایج');
+            });
+        };
+
+        function clearAllUsers() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید اطلاعات همه کاربران پاک شود؟')) {
+                localStorage.removeItem('users');
+                fetch('/api/clear_users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('خطا در پاک‌سازی دیتابیس: ' + (data.message || ''));
+                    }
+                })
+                .catch(error => {
+                    alert('خطا در ارتباط با سرور: ' + error);
+                });
+            }
+        }
+    </script>
+</body>
+</html> 
